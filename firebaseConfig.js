@@ -1,5 +1,5 @@
 import {firebase} from '@react-native-firebase/app';
-import '@react-native-firebase/auth';
+import messaging from '@react-native-firebase/messaging';
 import Config from 'react-native-config';
 
 const firebaseConfig = {
@@ -16,4 +16,4 @@ if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 
-export default firebase;
+export {firebase, messaging};
