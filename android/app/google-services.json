@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "71308086287",
+    "project_id": "urbannepal-8eee0",
+    "storage_bucket": "urbannepal-8eee0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:71308086287:android:3f5b7a84a182a6f1cf677a",
+        "android_client_info": {
+          "package_name": "com.futsalbooking"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "71308086287-qi0kh6vbftnmns2p9v141lm8ndptf8q8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDOIaOF8ZuE1zdd4bOfbepQZX35of-XCR0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "71308086287-qi0kh6vbftnmns2p9v141lm8ndptf8q8.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
