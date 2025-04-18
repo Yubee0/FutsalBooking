@@ -1,0 +1,51 @@
+export const colors = {
+  // Keep all the base colors except BACKGROUND
+  PRIMARY: '#4A90E2',
+  PRIMARY_DARK: '#2A70C2',
+  PRIMARY_LIGHT: '#E1F0FF',
+  WHITE: '#FFFFFF',
+  BLACK: '#000000',
+  GRAY: '#6C757D',
+  GRAY_LIGHT: '#D3D3D3',
+  GRAY_DARK: '#343A40',
+  TEXT_PRIMARY: '#212529',
+  TEXT_SECONDARY: '#495057',
+  BORDER: '#CED4DA',
+  SUCCESS: '#4CAF50',
+  ERROR: '#FF4500',
+  WARNING: '#FFA500',
+  INFO: '#5E5A80',
+};
+
+// Player theme
+const PLAYER_THEME = {
+  PRIMARY: '#2E7D32', // Dark green
+  PRIMARY_DARK: '#1B5E20',
+  PRIMARY_LIGHT: '#E8F5E9',
+  ACCENT: '#4CAF50', // Medium green
+  BACKGROUND: '#D0F0C0', //  (greenish)
+};
+
+// Owner theme
+const OWNER_THEME = {
+  PRIMARY: '#6A1B9A', // Dark purple
+  PRIMARY_DARK: '#4A148C',
+  PRIMARY_LIGHT: '#5E5A80',
+  ACCENT: '#9C27B0', // Medium purple
+  BACKGROUND: '#F3E5F5', // Light purple background
+};
+
+// Theme-specific colors
+export const playerColors = {
+  ...colors,
+  ...PLAYER_THEME,
+};
+
+export const ownerColors = {
+  ...colors,
+  ...OWNER_THEME,
+};
+
+export const getThemeColors = isOwner => {
+  return isOwner ? ownerColors : playerColors;
+};

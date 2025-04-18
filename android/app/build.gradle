@@ -3,6 +3,7 @@ apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 apply plugin: 'com.google.gms.google-services'
 apply from: project(':react-native-config').projectDir.getPath() + "/dotenv.gradle"
+apply from: file("../../node_modules/react-native-vector-icons/fonts.gradle")
 
 
 /**
@@ -120,6 +121,8 @@ dependencies {
     implementation platform('com.google.firebase:firebase-bom:32.7.0')
     implementation 'com.google.firebase:firebase-messaging-ktx'
     implementation 'com.google.firebase:firebase-analytics-ktx'
+    implementation project(':react-native-vector-icons')
+
 
     // For Kotlin support
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
