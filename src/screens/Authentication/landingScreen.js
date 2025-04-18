@@ -1,56 +1,40 @@
-import React, {useEffect} from 'react';
-import {View, Text, StyleSheet, Image} from 'react-native';
+import React, {useEffect, useRef} from 'react';
+import {View, Text, Image, Animated} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
+import styles from './styles';
 
 const LandingScreen = () => {
   const navigation = useNavigation();
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 1500,
+      useNativeDriver: true,
+    }).start();
+
     const timer = setTimeout(() => {
       navigation.navigate('Login');
-    }, 5000);
+    }, 3000);
     return () => clearTimeout(timer);
-  }, [navigation]);
+  }, [navigation, fadeAnim]);
 
   return (
-    <View style={styles.container}>
-      <Image
-        source={require('../../Assets/logo.jpeg')}
-        style={styles.logo}
-        resizeMode="contain"
-      />
-      <Text style={styles.title}>Welcome to Urban Nepal</Text>
-      <Text style={styles.subtitle}>Book your GAMES at your fingertips.</Text>
+    <View style={styles.landingContainer}>
+      <Animated.View style={{opacity: fadeAnim}}>
+        <Image
+          source={require('../../Assets/logo.jpeg')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+        <Text style={styles.landingTitle}>Urban Nepal</Text>
+        <Text style={styles.landingSubtitle}>
+          Book your games at your Finger tips
+        </Text>
+      </Animated.View>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#4b6f44',
-  },
-  logo: {
-    width: 120,
-    height: 120,
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#fff',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#f1f1f1',
-    marginBottom: 30,
-    textAlign: 'center',
-    paddingHorizontal: 20,
-  },
-});
 
 export default LandingScreen;

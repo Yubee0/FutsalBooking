@@ -1,4 +1,5 @@
-import React, {useState, useEffect, useRef} from 'react';
+import {colors} from '../constants/color';
+import React, {useState, useRef} from 'react';
 import {Text, TouchableOpacity, StyleSheet, Animated} from 'react-native';
 
 export const AlertType = {
@@ -39,19 +40,21 @@ const DropdownAlert = () => {
   const getBackgroundColor = () => {
     switch (type) {
       case AlertType.INFO:
-        return '#4A90E2';
+        return colors.INFO;
       case AlertType.WARNING:
-        return '#FFA500';
+        return colors.WARNING;
       case AlertType.ERROR:
-        return '#FF4500';
+        return colors.ERROR;
       case AlertType.SUCCESS:
-        return '#4CAF50';
+        return colors.SUCCESS;
       default:
-        return '#4A90E2';
+        return colors.PRIMARY;
     }
   };
 
-  if (!visible) return null;
+  if (!visible) {
+    return null;
+  }
 
   return (
     <Animated.View
@@ -91,7 +94,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   message: {
-    color: 'white',
+    color: colors.WHITE,
     flex: 1,
     fontSize: 16,
   },
@@ -99,13 +102,12 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   closeText: {
-    color: 'white',
+    color: colors.WHITE,
     fontSize: 18,
     fontWeight: 'bold',
   },
 });
 
-// Export the component AND showAlert function
 let dropdownRef = null;
 export const DropdownAlertWrapper = () => {
   dropdownRef = useRef();
