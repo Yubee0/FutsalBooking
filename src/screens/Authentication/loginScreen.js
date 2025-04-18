@@ -1,4 +1,8 @@
 import React, {useState} from 'react';
+import {useDispatch} from 'react-redux';
+import Config from 'react-native-config';
+import {setCredentials} from '../../redux/slices/authSlice';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   View,
   Text,
@@ -7,21 +11,18 @@ import {
   StyleSheet,
   Alert,
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
-import {getAuth, signInWithEmailAndPassword} from 'firebase/auth';
 
-const LoginScreen = () => {
-  const navigation = useNavigation();
+const LoginScreen = ({navigation}) => {
+  const dispatch = useDispatch();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
 
+  // Form validation logic
   const validateForm = () => {
-    let newErrors = {};
-    if (!email) {
-      newErrors.email = 'Email is required';
-    } else if (!email.includes('@')) {
-      newErrors.email = 'Invalid email format';
+    const newErrors = {};
+    if (!email.includes('@')) {
+      newErrors.email = 'Invalid email';
     }
     if (!password) {
       newErrors.password = 'Password is required';
@@ -30,18 +31,41 @@ const LoginScreen = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  // Handle login submission
   const handleLogin = async () => {
-    if (validateForm()) {
+    if (!validateForm()) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${Config.API_URL}/auth/login`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({email, password}),
+      });
+
+      const text = await response.text();
+      console.log(' Raw login response:', text);
+
+      let data;
       try {
-        const auth = getAuth();
-        await signInWithEmailAndPassword(auth, email, password);
-        Alert.alert('Success', 'Logged in successfully!');
-        navigation.navigate('Home');
-      } catch (error) {
-        console.log('Error Code:', error.code);
-        console.log('Error Message:', error.message);
-        Alert.alert('Error', error.message);
+        data = JSON.parse(text);
+      } catch (err) {
+        console.error('❌ JSON parse error:', err);
+        return Alert.alert('Error', 'Invalid server response');
       }
+
+      if (response.ok) {
+        await AsyncStorage.setItem('token', data.token);
+        dispatch(setCredentials({token: data.token, user: data.user}));
+        Alert.alert('Success', 'Login successful!');
+        navigation.navigate('Home');
+      } else {
+        Alert.alert('Login Failed', data.message || 'Invalid credentials');
+      }
+    } catch (error) {
+      console.error('Login Error:', error);
+      Alert.alert('Error', 'Something went wrong. Please try again later.');
     }
   };
 
@@ -49,31 +73,35 @@ const LoginScreen = () => {
     <View style={styles.container}>
       <Text style={styles.title}>Login</Text>
 
+      {/* Email Input */}
       <TextInput
         style={styles.input}
         placeholder="Email"
+        value={email}
+        onChangeText={setEmail}
+        placeholderTextColor="#888"
         keyboardType="email-address"
         autoCapitalize="none"
-        value={email}
-        placeholderTextColor="#888"
-        onChangeText={setEmail}
       />
       {errors.email && <Text style={styles.error}>{errors.email}</Text>}
 
+      {/* Password Input */}
       <TextInput
         style={styles.input}
         placeholder="Password"
         secureTextEntry
         value={password}
-        placeholderTextColor="#888"
         onChangeText={setPassword}
+        placeholderTextColor="#888"
       />
       {errors.password && <Text style={styles.error}>{errors.password}</Text>}
 
+      {/* Login Button */}
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
 
+      {/* Link to Signup Screen */}
       <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
         <Text style={styles.linkText}>Don't have an account? Sign Up</Text>
       </TouchableOpacity>

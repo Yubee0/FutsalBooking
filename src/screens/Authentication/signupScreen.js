@@ -27,17 +27,16 @@ const SignupScreen = () => {
     if (!email) {
       newErrors.email = 'Email is required';
     } else if (!email.includes('@')) {
-      newErrors.email = 'Invalid email format';
+      newErrors.email = 'Invalid email';
     }
     if (!password) {
       newErrors.password = 'Password is required';
     } else if (password.length < 4) {
-      newErrors.password = 'Password must be at least 4 characters';
+      newErrors.password = 'Minimum 4 characters';
     }
     if (!phone) {
       newErrors.phone = 'Phone number is required';
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -47,18 +46,10 @@ const SignupScreen = () => {
       return;
     }
 
+    const payload = {name, email, password, phone, role};
+    console.log('url', Config.API_URL);
+
     try {
-      const payload = {
-        email,
-        password,
-        name,
-        phone,
-        role,
-      };
-
-      console.log('Sending request to:', `${Config.API_URL}/auth/register`);
-      console.log('Request payload:', payload);
-
       const response = await fetch(`${Config.API_URL}/auth/register`, {
         method: 'POST',
         headers: {
@@ -66,23 +57,24 @@ const SignupScreen = () => {
         },
         body: JSON.stringify(payload),
       });
+      console.log('payload', payload);
 
-      const data = await response.json();
-      console.log('Response data:', data);
+      const text = await response.text();
+      console.log('Raw response text:', text);
 
-      if (response.ok) {
-        Alert.alert('Success', 'Account created successfully!');
-        navigation.navigate('Login');
-      } else {
-        Alert.alert('Error', data.message || 'Registration failed');
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (err) {
+        console.error('❌ JSON parse error:', err);
+        return Alert.alert('Error', 'Invalid server response');
       }
-    } catch (error) {
-      console.error('Signup error:', error);
-      if (error.message.includes('Network request failed')) {
-        Alert.alert('Error', 'Network error. Check your connection.');
-      } else {
-        Alert.alert('Error', 'Something went wrong. Please try again.');
-      }
+
+      console.log('Parsed response:', data);
+    } catch (err) {
+      console.error('Signup Error:', err);
+      console.log('error', err);
+      Alert.alert('Error', 'Network or server error');
     }
   };
 
@@ -90,6 +82,7 @@ const SignupScreen = () => {
     <View style={styles.container}>
       <Text style={styles.title}>Sign Up</Text>
 
+      {/* Role Toggle */}
       <View style={styles.roleToggle}>
         <TouchableOpacity
           style={[styles.roleButton, role === 'owner' && styles.selectedRole]}
@@ -103,6 +96,7 @@ const SignupScreen = () => {
         </TouchableOpacity>
       </View>
 
+      {/* Input Fields */}
       <TextInput
         style={styles.input}
         placeholder="Full Name"
@@ -143,10 +137,12 @@ const SignupScreen = () => {
       />
       {errors.password && <Text style={styles.error}>{errors.password}</Text>}
 
+      {/* Sign Up Button */}
       <TouchableOpacity style={styles.button} onPress={handleSignup}>
         <Text style={styles.buttonText}>Sign Up</Text>
       </TouchableOpacity>
 
+      {/* Navigate to Login */}
       <TouchableOpacity onPress={() => navigation.navigate('Login')}>
         <Text style={styles.linkText}>Already have an account? Login</Text>
       </TouchableOpacity>
@@ -191,9 +187,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   selectedRole: {backgroundColor: '#7FFF00'},
-  roleText: {
-    color: '#000',
-  },
+  roleText: {color: '#000'},
 });
 
 export default SignupScreen;
