@@ -18,5 +18,6 @@ func SetUpGroundRoutes(r *gin.Engine, db *gorm.DB) {
 		groundGroup.POST("/create-ground", handler.CreateGround)
 		groundGroup.GET("/get-grounds", handler.GetGrounds)
 		groundGroup.GET("/get-grounds/:ground_id", handler.GetGroundDetails)
+		groundGroup.POST("/:id/recurring-reservation", handler.CreateRecurringReservation)
 	}
 }

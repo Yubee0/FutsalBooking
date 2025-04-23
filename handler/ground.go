@@ -23,8 +23,8 @@ func CreateGround(c *gin.Context) {
 		Name        string `json:"name"`
 		Location    string `json:"location"`
 		Description string `json:"description"`
-		StartTime   string `json:"start-time"` // "14:00"
-		EndTime     string `json:"end-time"`   // "20:00"
+		StartTime   string `json:"start-time"` // e.g. "07:00"
+		EndTime     string `json:"end-time"`   // e.g. "20:00"
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -32,7 +32,6 @@ func CreateGround(c *gin.Context) {
 		return
 	}
 
-	// Parse opening and closing time
 	layout := "15:04"
 	start, err := time.Parse(layout, req.StartTime)
 	if err != nil {
@@ -49,7 +48,6 @@ func CreateGround(c *gin.Context) {
 		return
 	}
 
-	// Create ground
 	ground := models.Ground{
 		Name:        req.Name,
 		Location:    req.Location,
@@ -58,21 +56,33 @@ func CreateGround(c *gin.Context) {
 		OpeningTime: req.StartTime,
 		ClosingTime: req.EndTime,
 	}
+
 	if err := database.DB.Create(&ground).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create ground"})
 		return
 	}
 
-	// Generate 1-hour time slots
+	// Generate time slots for the next 30 days
+	current := time.Now()
+	dateLayout := "2006-01-02"
 	slots := []models.TimeSlot{}
-	for t := start; t.Add(time.Hour).Equal(end) || t.Add(time.Hour).Before(end); t = t.Add(time.Hour) {
-		slot := models.TimeSlot{
-			GroundID:  ground.ID,
-			StartTime: t.Format(layout),
-			EndTime:   t.Add(time.Hour).Format(layout),
-			Status:    "available",
+
+	for i := 0; i < 30; i++ {
+		day := current.AddDate(0, 0, i) // today + i days
+
+		slotStart, _ := time.Parse(layout, req.StartTime)
+		slotEnd, _ := time.Parse(layout, req.EndTime)
+
+		for t := slotStart; t.Add(time.Hour).Equal(slotEnd) || t.Add(time.Hour).Before(slotEnd); t = t.Add(time.Hour) {
+			slot := models.TimeSlot{
+				GroundID:  ground.ID,
+				Date:      day.Format(dateLayout), // Fixed: Assign correct date
+				StartTime: t.Format(layout),
+				EndTime:   t.Add(time.Hour).Format(layout),
+				Status:    "available",
+			}
+			slots = append(slots, slot)
 		}
-		slots = append(slots, slot)
 	}
 
 	if len(slots) > 0 {
@@ -83,7 +93,7 @@ func CreateGround(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, gin.H{
-		"message": "Ground and time slots created successfully",
+		"message": "Ground and time slots created successfully for 30 days",
 		"ground":  ground,
 		"slots":   slots,
 	})

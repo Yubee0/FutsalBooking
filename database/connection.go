@@ -45,6 +45,9 @@ func Connect() {
 	if err := db.AutoMigrate(&models.Booking{}); err != nil {
 		log.Fatal("Failed to run migrations:", err)
 	}
+	if err := db.AutoMigrate(&models.RecurringReservation{}); err != nil {
+		log.Fatal("Failed to run migrations:", err)
+	}
 
 	// Print success message once the connection and migration are successful
 	fmt.Println("✅ Database connected & migrated.")
