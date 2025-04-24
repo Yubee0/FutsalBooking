@@ -16,5 +16,6 @@ func SetupUserRoutes(r *gin.Engine, db *gorm.DB) {
 	{
 		// Pass db to the handler function for GetProfile
 		userGroup.GET("/me", handler.GetProfile(db))
+		userGroup.GET("/:firebase_uid/ownerprofile", handler.GetOwnerProfile)
 	}
 }
