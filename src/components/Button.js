@@ -4,23 +4,27 @@ import {
   Text,
   StyleSheet,
   ActivityIndicator,
+  View,
 } from 'react-native';
+import {colors} from '../constants/color';
 
 const Button = ({
   title,
   onPress,
-  backgroundColor = '#4A90E2',
-  textColor = '#FFF',
+  backgroundColor = colors.PRIMARY,
+  textColor = colors.WHITE,
   disabled = false,
   loading = false,
   style = {},
   textStyle = {},
+  icon,
 }) => {
   return (
     <TouchableOpacity
       style={[
         styles.button,
-        {backgroundColor, opacity: disabled ? 0.6 : 1},
+        {backgroundColor},
+        disabled && {opacity: 0.6},
         style,
       ]}
       onPress={onPress}
@@ -29,9 +33,12 @@ const Button = ({
       {loading ? (
         <ActivityIndicator color={textColor} />
       ) : (
-        <Text style={[styles.buttonText, {color: textColor}, textStyle]}>
-          {title}
-        </Text>
+        <View style={styles.buttonContent}>
+          {icon && <View style={styles.iconContainer}>{icon}</View>}
+          <Text style={[styles.buttonText, {color: textColor}, textStyle]}>
+            {title}
+          </Text>
+        </View>
       )}
     </TouchableOpacity>
   );
@@ -45,10 +52,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginVertical: 5,
+    flexDirection: 'row',
   },
   buttonText: {
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconContainer: {
+    marginRight: 8,
   },
 });
 
