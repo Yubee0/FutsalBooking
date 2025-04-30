@@ -87,13 +87,13 @@ const CustomDrawer = ({navigation, state}) => {
           {
             label: 'Manage Ground',
             screen: 'ManageGround',
-            icon: 'stadium', // 🛠️ use 'stadium'
+            icon: 'stadium',
             iconType: 'MaterialCommunityIcons',
           },
           {
             label: 'Booking Requests',
             screen: 'BookingRequests',
-            icon: 'clipboard-list-outline', // 🛠️ fix to 'clipboard-list-outline'
+            icon: 'clipboard-list-outline',
             iconType: 'MaterialCommunityIcons',
           },
           {
@@ -107,13 +107,13 @@ const CustomDrawer = ({navigation, state}) => {
           {
             label: 'Find Grounds',
             screen: 'FindGrounds',
-            icon: 'magnify', // 🛠️ use 'magnify' from MaterialCommunityIcons
+            icon: 'magnify',
             iconType: 'MaterialCommunityIcons',
           },
           {
             label: 'My Bookings',
             screen: 'MyBookings',
-            icon: 'calendar-text', // 🛠️ 'calendar-text' instead of 'event-note'
+            icon: 'calendar-text',
             iconType: 'MaterialCommunityIcons',
           },
         ]),
