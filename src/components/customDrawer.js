@@ -5,7 +5,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import {ownerColors, playerColors} from '../constants/color';
 import Button from './Button';
-import {logoutUser} from '../redux/actions/authActions';
+import {logoutUser} from '../redux/slices/authThunk';
 
 // Custom Avatar Component
 const CustomAvatar = ({

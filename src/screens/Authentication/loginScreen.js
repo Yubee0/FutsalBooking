@@ -11,10 +11,11 @@ import {useDispatch} from 'react-redux';
 import Config from 'react-native-config';
 import {setCredentials} from '../../redux/slices/authSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {showAlert} from '../../components/Alert';
 import {colors} from '../../constants/color';
 import Button from '../../components/Button';
 import styles from './styles';
+import {AlertType} from '../../components/DropdownAlert';
+import {showAlert} from '../../components/Alert';
 
 const LoginScreen = ({navigation}) => {
   const dispatch = useDispatch();
@@ -83,7 +84,7 @@ const LoginScreen = ({navigation}) => {
       );
 
       // Using custom alert for success
-      showAlert('success', 'Logged in successfully!');
+      showAlert(AlertType.SUCCESS, 'Logged in successfully!');
       navigation.navigate(
         data.role === 'owner' ? 'OwnerDrawer' : 'PlayerDrawer',
       );
@@ -93,7 +94,7 @@ const LoginScreen = ({navigation}) => {
       if (message.includes('Incorrect email or password')) {
         message = 'The email or password you entered is incorrect';
       }
-      showAlert('Login Error', message);
+      showAlert(AlertType.WARNING, message);
     } finally {
       setIsLoading(false);
     }
@@ -115,11 +116,11 @@ const LoginScreen = ({navigation}) => {
   //       }),
   //     );
 
-  //     showAlert('success', 'Logged in successfully!');
+  //     showAlert(AlertType.SUCCESS, 'Login Successful.');
   //     navigation.navigate('PlayerDrawer');
   //   } catch (error) {
   //     console.error('Login Error:', error);
-  //     showAlert('Error', 'An error occurred during login');
+  //     showAlert(AlertType.ERROR, 'An error occurred during login');
   //   } finally {
   //     setIsLoading(false);
   //   }

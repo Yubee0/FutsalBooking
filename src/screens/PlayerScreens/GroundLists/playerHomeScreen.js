@@ -25,6 +25,7 @@ const PlayerHomeScreen = ({navigation}) => {
       });
 
       const responseText = await response.text();
+
       if (!response.ok) {
         throw new Error(`Server returned ${response.status}: ${responseText}`);
       }

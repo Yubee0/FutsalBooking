@@ -29,11 +29,26 @@ const groundSlice = createSlice({
     setFilteredSlots(state, action) {
       state.filteredSlots = action.payload;
     },
-    resetGround(state) {
+    resetGround() {
       return initialState;
     },
   },
 });
+
+export const reserveSlot = slotId => (dispatch, getState) => {
+  const {allSlots, currentGround} = getState().ground;
+
+  const updatedSlots = allSlots.map(slot =>
+    slot.ID === slotId ? {...slot, Status: 'reserved'} : slot,
+  );
+
+  dispatch(
+    fetchGroundSuccess({
+      ground: currentGround,
+      slots: updatedSlots,
+    }),
+  );
+};
 
 export const {
   fetchGroundStart,

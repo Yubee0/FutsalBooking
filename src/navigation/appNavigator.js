@@ -23,14 +23,14 @@ const OwnerDrawerNavigator = () => (
       overlayColor: 'transparent',
     }}
     drawerContent={props => <CustomDrawer {...props} />}>
-    <Drawer.Screen name="OwnerHome" component={OwnerHomeScreen} />
+    <Drawer.Screen name="Welcome Back" component={OwnerHomeScreen} />
     <Drawer.Screen name="CreateGround" component={CreateGroundScreen} />
   </Drawer.Navigator>
 );
 
 const PlayerDrawerNavigator = () => (
   <Drawer.Navigator drawerContent={props => <CustomDrawer {...props} />}>
-    <Drawer.Screen name="PlayerHome" component={PlayerHomeScreen} />
+    <Drawer.Screen name="Welcome Back" component={PlayerHomeScreen} />
     <Stack.Screen name="GroundDetail" component={GroundTimeSlotScreen} />
   </Drawer.Navigator>
 );
@@ -45,8 +45,16 @@ const AppNavigator = () => {
         component={LandingScreen}
         options={{headerShown: false}}
       />
-      <Stack.Screen name="Login" component={LoginScreen} />
-      <Stack.Screen name="Signup" component={SignupScreen} />
+      <Stack.Screen
+        name="Login"
+        component={LoginScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="Signup"
+        component={SignupScreen}
+        options={{headerShown: false}}
+      />
       {user?.role === 'owner' ? (
         <Stack.Screen
           name="OwnerDrawer"

@@ -23,6 +23,7 @@ import {
   fetchGroundSuccess,
   fetchGroundFailure,
   setFilteredSlots,
+  reserveSlot,
 } from '../../../redux/slices/groundSlice';
 import {ownerColors} from '../../../constants/color';
 import {Icon} from 'react-native-paper';
@@ -87,6 +88,12 @@ const OwnerHomeScreen = ({navigation}) => {
   useEffect(() => {
     fetchGroundData();
   }, [fetchGroundData]);
+
+  const handleReserveSlot = slotId => {
+    dispatch(reserveSlot(slotId));
+    const filtered = filterSlotsByDate(allSlots, selectedDate);
+    dispatch(setFilteredSlots(filtered));
+  };
 
   const handleDateSelect = date => {
     setSelectedDate(date);

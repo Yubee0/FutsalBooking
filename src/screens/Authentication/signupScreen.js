@@ -8,9 +8,10 @@ import {
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import Config from 'react-native-config';
-import {styles} from './styles';
 import Button from '../../components/Button';
 import {colors} from '../../constants/color';
+import styles from './styles';
+import {AlertType} from '../../components/DropdownAlert';
 import {showAlert} from '../../components/Alert';
 
 const SignupScreen = () => {
@@ -65,20 +66,23 @@ const SignupScreen = () => {
 
       if (!response.ok) {
         if (data.error === 'User already exists') {
-          showAlert('Error', 'An account with this email already exists');
+          showAlert(
+            AlertType.ERROR,
+            'An account with this email already exists',
+          );
         } else {
           throw new Error(data.message || 'Registration failed');
         }
         return;
       }
 
-      showAlert('Success', 'Account created successfully!', [
+      showAlert(AlertType.SUCCESS, 'Account created successfully!', [
         {text: 'OK', onPress: () => navigation.navigate('Login')},
       ]);
     } catch (error) {
       console.error('Signup Error:', error);
       showAlert(
-        'Error',
+        AlertType.ERROR,
         error.message || 'Failed to create account. Please try again.',
       );
     } finally {
