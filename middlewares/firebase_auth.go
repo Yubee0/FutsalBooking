@@ -129,6 +129,7 @@ func FirebaseAuthMiddleware(db *gorm.DB) gin.HandlerFunc {
 
 		// Set context values
 		c.Set("user", user)
+		c.Set("Userid", user.ID)
 		c.Set("authProvider", token.Issuer) // Track auth source
 		c.Next()
 	}

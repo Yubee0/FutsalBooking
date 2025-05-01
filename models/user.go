@@ -9,4 +9,5 @@ type User struct {
 	Role        string `gorm:"default:user"`
 	Name        string
 	Phone       string
+	FCMToken    string `gorm:"column:fcm_token"`
 }

@@ -13,6 +13,6 @@ func SetupBookingRoutes(r *gin.Engine, db *gorm.DB) {
 	bookingGroup := r.Group("/api/bookings")
 	bookingGroup.Use(middlewares.FirebaseAuthMiddleware(database.DB))
 	{
-		bookingGroup.POST("", handler.CreateBooking(db))
+		bookingGroup.POST("", handler.CreateBookingRequest(db))
 	}
 }

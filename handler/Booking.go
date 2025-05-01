@@ -1,22 +1,23 @@
 package handler
 
 import (
+	"errors"
+	"log"
 	"net/http"
 	"time"
 
 	"futsal-booking/models"
+	"futsal-booking/utils"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
-// POST /api/bookings
-func CreateBooking(db *gorm.DB) gin.HandlerFunc {
+func CreateBookingRequest(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var req struct {
 			GroundID  uint   `json:"ground_id"`
-			Date      string `json:"date"` // format: 2025-04-04
-			Location  string `json:"location"`
+			Date      string `json:"date"`       // format: 2025-04-04
 			StartTime string `json:"start_time"` // format: 14:00
 			EndTime   string `json:"end_time"`   // format: 15:00
 		}
@@ -26,27 +27,24 @@ func CreateBooking(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		// Parse date
 		dateParsed, err := time.Parse("2006-01-02", req.Date)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format"})
 			return
 		}
 
-		// Optional: Validate time format (e.g., 24hr hh:mm)
 		if !validTimeFormat(req.StartTime) || !validTimeFormat(req.EndTime) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid time format"})
 			return
 		}
 
-		// Get user from context (from middleware)
-		userID, exists := c.Get("userID")
+		userID, exists := c.Get("Userid")
 		if !exists {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			return
 		}
 
-		// Check availability
+		// Check slot availability
 		isAvailable, err := models.IsSlotAvailable(db, req.GroundID, dateParsed, req.StartTime, req.EndTime)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Server error"})
@@ -58,7 +56,7 @@ func CreateBooking(db *gorm.DB) gin.HandlerFunc {
 		}
 
 		// Create booking
-		booking := models.Booking{
+		booking := models.BookingRequest{
 			UserID:    userID.(uint),
 			GroundID:  req.GroundID,
 			Date:      dateParsed,
@@ -68,40 +66,55 @@ func CreateBooking(db *gorm.DB) gin.HandlerFunc {
 		}
 
 		if err := db.Create(&booking).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create booking"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create booking request"})
 			return
 		}
 
-		c.JSON(http.StatusCreated, gin.H{"message": "Booking successful", "booking": booking})
+		// Fetch ground
+		var ground models.Ground
+		result := db.Where("id = ?", booking.GroundID).First(&ground)
+		if result.Error != nil {
+			if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+				log.Printf("Ground with ID %d not found", booking.GroundID)
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Ground not found"})
+				return
+			}
+			log.Printf("Error fetching ground: %v", result.Error)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+			return
+		}
+
+		// Fetch ground owner
+		var owner models.User
+		if err := db.First(&owner, ground.OwnerID).Error; err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Owner not found"})
+			return
+		}
+
+		// Notify ground owner
+		if owner.FCMToken != "" {
+			go utils.SendFCMNotification(owner.FCMToken, "New Booking Request", "You have a new booking request on your ground.")
+		}
+
+		// Fetch booking user (to notify them if needed)
+		var bookingUser models.User
+		if err := db.First(&bookingUser, userID.(uint)).Error; err != nil {
+			log.Printf("Failed to fetch booking user: %v", err)
+		} else {
+			if bookingUser.FCMToken != "" {
+				bookingMessage := "Your booking request has been sent successfully!"
+				go utils.SendFCMNotification(bookingUser.FCMToken, "Booking Submitted", bookingMessage)
+			}
+		}
+
+		c.JSON(http.StatusCreated, gin.H{
+			"message": "Booking request sent successfully",
+			"booking": booking,
+		})
 	}
 }
 
-// simple validator for hh:mm
-func validTimeFormat(t string) bool {
-	_, err := time.Parse("15:04", t)
+func validTimeFormat(s string) bool {
+	_, err := time.Parse("15:04", s)
 	return err == nil
 }
-
-// Check for time slot overlap
-// func isSlotAvailable(db *gorm.DB, groundID uint, date time.Time, start string, end string) (bool, error) {
-// 	var bookings []Booking
-// 	err := db.Where("ground_id = ? AND date = ? AND status = ?", groundID, date, "approved").Find(&bookings).Error
-// 	if err != nil {
-// 		return false, err
-// 	}
-
-// 	layout := "15:04"
-// 	reqStart, _ := time.Parse(layout, start)
-// 	reqEnd, _ := time.Parse(layout, end)
-
-// 	for _, b := range bookings {
-// 		bStart, _ := time.Parse(layout, b.StartTime)
-// 		bEnd, _ := time.Parse(layout, b.EndTime)
-
-// 		// Check if requested slot overlaps with existing booking
-// 		if reqStart.Before(bEnd) && reqEnd.After(bStart) {
-// 			return false, nil
-// 		}
-// 	}
-// 	return true, nil
-// }

@@ -1,7 +1,12 @@
 package utils
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"log"
+	"net/http"
+	"os"
 	"time"
 )
 
@@ -31,4 +36,53 @@ func GenerateTimeSlots(opening, closing string, slotDuration int) ([][2]string, 
 	}
 
 	return slots, nil
+}
+
+func SendFCMNotification(token, title, body string) {
+	url := "https://fcm.googleapis.com/fcm/send"
+
+	// Build the payload
+	payload := map[string]interface{}{
+		"to": token,
+		"notification": map[string]string{
+			"title": title,
+			"body":  body,
+		},
+		"priority": "high",
+	}
+
+	jsonData, err := json.Marshal(payload)
+	if err != nil {
+		log.Printf("Failed to marshal FCM payload: %v", err)
+		return
+	}
+
+	// Create HTTP request
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
+	if err != nil {
+		log.Printf("Failed to create FCM request: %v", err)
+		return
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	// Get server key from environment variable (better than hardcoding)
+	serverKey := os.Getenv("FIREBASE_SERVER_KEY")
+	if serverKey == "" {
+		log.Println("FIREBASE_SERVER_KEY environment variable not set")
+		return
+	}
+	req.Header.Set("Authorization", "key="+serverKey)
+
+	// Send request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Printf("Failed to send FCM notification: %v", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		log.Printf("FCM notification failed with status: %s", resp.Status)
+	}
 }

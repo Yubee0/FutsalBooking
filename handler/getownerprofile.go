@@ -4,21 +4,29 @@ import (
 	"futsal-booking/database"
 	"futsal-booking/models"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
 func GetOwnerProfile(c *gin.Context) {
-	firebaseUID := c.Param("firebase_uid")
+	ownerIDParam := c.Param("owner_id")
 
-	// Step 1: Find owner from firebase_uid
+	// Convert ownerID from string to uint
+	ownerID, err := strconv.ParseUint(ownerIDParam, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid owner ID"})
+		return
+	}
+
+	// Step 1: Find owner by ID and role
 	var owner models.User
-	if err := database.DB.Where("firebase_uid = ? AND role = ?", firebaseUID, "owner").First(&owner).Error; err != nil {
+	if err := database.DB.Where("id = ? AND role = ?", ownerID, "owner").First(&owner).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Owner not found"})
 		return
 	}
 
-	// Step 2: Get grounds with user_id == owner.ID
+	// Step 2: Get grounds with owner_id == owner.ID
 	var grounds []models.Ground
 	if err := database.DB.Where("owner_id = ?", owner.ID).Find(&grounds).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch grounds"})

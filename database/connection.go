@@ -42,7 +42,7 @@ func Connect() {
 	if err := db.AutoMigrate(&models.TimeSlot{}); err != nil {
 		log.Fatal("Failed to run migrations:", err)
 	}
-	if err := db.AutoMigrate(&models.Booking{}); err != nil {
+	if err := db.AutoMigrate(&models.BookingRequest{}); err != nil {
 		log.Fatal("Failed to run migrations:", err)
 	}
 	if err := db.AutoMigrate(&models.RecurringReservation{}); err != nil {
