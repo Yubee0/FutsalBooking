@@ -1,137 +1,161 @@
 import {StyleSheet} from 'react-native';
+import {playerColors} from '../../../constants/color';
 
-const styles = StyleSheet.create({
+export default StyleSheet.create({
   container: {
     flex: 1,
-    padding: 15,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: playerColors.BACKGROUND,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    marginTop: 10,
-    color: '#666',
-  },
-  noGroundContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  noGroundText: {
-    fontSize: 18,
-    color: '#666',
-    marginBottom: 10,
-  },
-  backLink: {
-    color: '#4A90E2',
-    fontSize: 16,
+  scrollContainer: {
+    paddingBottom: 20,
   },
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 15,
+    padding: 16,
+    paddingBottom: 8,
   },
   backButtonText: {
-    color: '#4A90E2',
+    marginLeft: 8,
+    color: playerColors.PRIMARY,
     fontSize: 16,
-    marginLeft: 5,
   },
   groundHeader: {
-    marginBottom: 20,
-    backgroundColor: 'white',
-    padding: 15,
-    borderRadius: 8,
-    elevation: 2,
+    padding: 16,
+    paddingBottom: 8,
   },
   groundTitle: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 5,
+    color: playerColors.TEXT_PRIMARY,
+    marginBottom: 8,
   },
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 8,
   },
   groundLocation: {
-    fontSize: 16,
-    color: '#666',
-    marginLeft: 5,
+    marginLeft: 4,
+    color: playerColors.TEXT_SECONDARY,
+    fontSize: 14,
   },
   groundDescription: {
+    color: playerColors.TEXT_SECONDARY,
     fontSize: 14,
-    color: '#777',
-    marginBottom: 15,
-    lineHeight: 20,
+    marginBottom: 12,
   },
   groundInfoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginBottom: 16,
   },
   infoItem: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   infoText: {
+    marginLeft: 4,
+    color: playerColors.TEXT_SECONDARY,
     fontSize: 14,
-    color: '#666',
-    marginLeft: 5,
+  },
+  weekNavigation: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: playerColors.WHITE,
+    borderTopWidth: 1,
+    borderTopColor: playerColors.BORDER,
+    borderBottomWidth: 1,
+    borderBottomColor: playerColors.BORDER,
+  },
+  navButton: {
+    padding: 8,
+  },
+  weekRangeText: {
+    fontWeight: 'bold',
+    color: playerColors.TEXT_PRIMARY,
   },
   dateSelector: {
-    marginBottom: 15,
-  },
-  dateSelectorContent: {
-    paddingHorizontal: 5,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    backgroundColor: playerColors.WHITE,
   },
   dateButton: {
+    width: 50,
     alignItems: 'center',
-    padding: 10,
-    marginHorizontal: 5,
+    paddingVertical: 8,
+    marginHorizontal: 4,
     borderRadius: 8,
-    backgroundColor: '#f0f0f0',
-    width: 60,
+  },
+  todayButton: {
+    backgroundColor: playerColors.GRAY_LIGHT,
   },
   selectedDateButton: {
-    backgroundColor: '#4A90E2',
+    backgroundColor: playerColors.PRIMARY,
   },
   dayName: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: 12,
     fontWeight: 'bold',
-  },
-  selectedDayName: {
-    color: '#FFF',
+    color: playerColors.TEXT_SECONDARY,
   },
   dayNumber: {
-    fontSize: 18,
-    color: '#333',
+    fontSize: 16,
     fontWeight: 'bold',
+    color: playerColors.TEXT_PRIMARY,
+    marginTop: 4,
   },
-  selectedDayNumber: {
-    color: '#FFF',
+  selectedText: {
+    color: playerColors.WHITE,
+  },
+  todayText: {
+    color: playerColors.PRIMARY,
   },
   sectionTitle: {
+    padding: 16,
+    paddingBottom: 8,
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 15,
-    color: '#333',
-    paddingHorizontal: 5,
+    color: playerColors.TEXT_PRIMARY,
+  },
+  slotsContainer: {
+    paddingHorizontal: 16,
   },
   noSlotsContainer: {
     alignItems: 'center',
-    padding: 30,
+    padding: 32,
   },
   noSlotsText: {
-    marginTop: 10,
-    color: '#666',
+    fontSize: 16,
+    color: playerColors.TEXT_PRIMARY,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  noSlotsHint: {
+    fontSize: 14,
+    color: playerColors.TEXT_SECONDARY,
+    textAlign: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noGroundContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
+  },
+  noGroundText: {
+    fontSize: 18,
+    color: playerColors.TEXT_PRIMARY,
+    marginBottom: 16,
+  },
+  backLink: {
+    color: playerColors.PRIMARY,
     fontSize: 16,
   },
-  slotsContainer: {
-    paddingBottom: 20,
-  },
 });
-
-export default styles;

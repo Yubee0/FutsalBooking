@@ -1,30 +1,10 @@
 import {StyleSheet} from 'react-native';
 import {ownerColors} from '../../../constants/color';
 
-const styles = StyleSheet.create({
+export default StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: ownerColors.BACKGROUND,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  noGroundContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 30,
-  },
-  noGroundText: {
-    fontSize: 18,
-    color: ownerColors.GRAY_DARK,
-    marginVertical: 20,
-    textAlign: 'center',
-  },
-  createButton: {
-    width: '70%',
   },
   header: {
     padding: 20,
@@ -45,36 +25,38 @@ const styles = StyleSheet.create({
     backgroundColor: ownerColors.WHITE,
     borderBottomWidth: 1,
     borderBottomColor: ownerColors.BORDER,
+    maxHeight: 70, // Added to control height
   },
   weekSelectorContent: {
     paddingHorizontal: 10,
-    paddingVertical: 15,
+    paddingVertical: 10, // Reduced from 15
   },
   dayButton: {
-    width: 60,
+    width: 50, // Reduced from 60
     alignItems: 'center',
-    paddingVertical: 10,
-    marginHorizontal: 5,
+    paddingVertical: 8, // Reduced from 10
+    marginHorizontal: 4, // Reduced from 5
     borderRadius: 8,
+    backgroundColor: ownerColors.GRAY_LIGHT, // Added background
   },
   selectedDay: {
     backgroundColor: ownerColors.PRIMARY,
   },
   dayName: {
-    fontSize: 14,
+    fontSize: 12, // Reduced from 14
     fontWeight: 'bold',
     color: ownerColors.TEXT_PRIMARY,
   },
   dayDate: {
-    fontSize: 16,
-    marginTop: 5,
+    fontSize: 14, // Reduced from 16
+    marginTop: 4, // Reduced from 5
     color: ownerColors.TEXT_PRIMARY,
   },
   selectedDayText: {
     color: ownerColors.WHITE,
   },
   dateContainer: {
-    padding: 15,
+    padding: 12, // Reduced from 15
     backgroundColor: ownerColors.WHITE,
     borderBottomWidth: 1,
     borderBottomColor: ownerColors.BORDER,
@@ -92,14 +74,30 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 40,
+    padding: 20, // Reduced from 40
   },
   noSlotsText: {
-    textAlign: 'center',
-    marginTop: 20,
     fontSize: 16,
     color: ownerColors.GRAY_DARK,
+    marginTop: 16,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noGroundContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20, // Reduced from 30
+  },
+  noGroundText: {
+    fontSize: 18,
+    color: ownerColors.GRAY_DARK,
+    marginVertical: 16, // Reduced from 20
+  },
+  createButton: {
+    width: '70%',
   },
 });
-
-export default styles;

@@ -12,7 +12,6 @@ import {
 import TimeSlotCard from '../../../components/timeSlotCard';
 import Button from '../../../components/Button';
 import {
-  formatDateForAPI,
   getDayName,
   generateWeek,
   formatDisplayDate,
@@ -23,6 +22,7 @@ import {
   fetchGroundSuccess,
   fetchGroundFailure,
   setFilteredSlots,
+  reserveSlot,
 } from '../../../redux/slices/groundSlice';
 import {ownerColors} from '../../../constants/color';
 import {Icon} from 'react-native-paper';
@@ -38,16 +38,12 @@ const OwnerHomeScreen = ({navigation}) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const weekDays = generateWeek();
 
-  const filterSlotsByDate = (slots, date) => {
+  const filterSlotsByDate = useCallback((slots, date) => {
     if (!slots || !slots.length) {
       return [];
     }
-    const dateStr = formatDateForAPI(date);
-    return slots.filter(slot => {
-      const slotDate = new Date(slot.CreatedAt).toISOString().split('T')[0];
-      return slotDate === dateStr;
-    });
-  };
+    return slots;
+  }, []);
 
   const fetchGroundData = useCallback(async () => {
     dispatch(fetchGroundStart());
@@ -58,6 +54,7 @@ const OwnerHomeScreen = ({navigation}) => {
       });
 
       const text = await response.text();
+      console.log('text', text);
       if (response.status === 404) {
         dispatch(fetchGroundSuccess({ground: null, slots: []}));
         return;
@@ -82,11 +79,17 @@ const OwnerHomeScreen = ({navigation}) => {
       dispatch(fetchGroundFailure(error.message));
       showAlert(AlertType.ERROR, error.message);
     }
-  }, [selectedDate, dispatch]);
+  }, [selectedDate, dispatch, filterSlotsByDate]);
 
   useEffect(() => {
     fetchGroundData();
   }, [fetchGroundData]);
+
+  const handleReserveSlot = slotId => {
+    dispatch(reserveSlot(slotId));
+    const filtered = filterSlotsByDate(allSlots, selectedDate);
+    dispatch(setFilteredSlots(filtered));
+  };
 
   const handleDateSelect = date => {
     setSelectedDate(date);

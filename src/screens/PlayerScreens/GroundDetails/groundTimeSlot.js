@@ -1,181 +1,134 @@
-import React, {useState, useEffect} from 'react';
-import Config from 'react-native-config';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   ScrollView,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
-
+import {useSelector, useDispatch} from 'react-redux';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {TimeSlotCard} from '../../../components/timeSlotCard';
-import {formatDisplayDate} from '../../../components/dateUtils';
+import {
+  fetchGroundStart,
+  fetchGroundSuccess,
+  fetchGroundFailure,
+  setFilteredSlots,
+} from '../../../redux/slices/groundSlice';
+import {
+  formatDisplayDate,
+  generateWeek,
+  isSameDay,
+} from '../../../components/dateUtils';
 import styles from './styles';
+import {playerColors} from '../../../constants/color';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Config from 'react-native-config';
+import {requestBookingThunk} from '../../../redux/slices/bookingThunk';
+import {AlertType} from '../../../components/DropdownAlert';
+import {showAlert} from '../../../components/Alert';
 
 const GroundTimeSlotScreen = ({route, navigation}) => {
   const {groundId} = route.params;
-  const [ground, setGround] = useState(null);
-  const [slots, setSlots] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const dispatch = useDispatch();
+  const {currentGround, allSlots, filteredSlots, loading} = useSelector(
+    state => state.ground,
+  );
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [currentWeek, setCurrentWeek] = useState(generateWeek());
 
   useEffect(() => {
-    fetchGroundDetails();
-  }, [groundId, selectedDate]);
+    fetchGroundTimeslots();
+  }, [groundId]);
 
-  const fetchGroundDetails = async () => {
-    setIsLoading(true);
+  const fetchGroundTimeslots = async () => {
+    dispatch(fetchGroundStart());
     try {
       const token = await AsyncStorage.getItem('token');
-      const dateString = selectedDate.toISOString().split('T')[0];
 
       const response = await fetch(
-        `${Config.API_URL}/ground/get-grounds/${groundId}?date=${dateString}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
+        `${Config.API_URL}/ground/get-grounds/${groundId}`,
+        {headers: {Authorization: `Bearer ${token}`}},
       );
 
-      const data = await response.json();
+      const responseText = await response.text();
+      console.log('Raw API response:', responseText);
 
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to fetch ground details');
+        throw new Error(`Server returned ${response.status}: ${responseText}`);
       }
 
-      setGround(data.ground);
-      setSlots(data.slots || []);
+      const data = JSON.parse(responseText);
+      console.log('Parsed API response:', data);
+
+      // Updated to handle the correct response structure
+      const slots = data.slots || [];
+      dispatch(
+        fetchGroundSuccess({
+          ground: data.ground,
+          slots: slots,
+        }),
+      );
+
+      const filtered = filterSlotsByDate(slots, selectedDate);
+      dispatch(setFilteredSlots(filtered));
     } catch (error) {
-      console.error('Error fetching ground details:', error);
-      Alert.alert('Error', error.message);
-    } finally {
-      setIsLoading(false);
+      dispatch(fetchGroundFailure(error.message));
+      showAlert(AlertType.ERROR, error.message);
     }
   };
 
-  const handleDateChange = newDate => {
-    setSelectedDate(newDate);
+  const filterSlotsByDate = (slots, date) => {
+    if (!slots) {
+      return [];
+    }
+    const dateStr = date.toISOString().split('T')[0];
+    return slots.filter(slot => {
+      // Handle both possible date formats from API
+      const slotDate = slot.date ? new Date(slot.date) : new Date();
+      const slotDateStr = slotDate.toISOString().split('T')[0];
+      return slotDateStr === dateStr;
+    });
   };
 
-  const handleSlotSelect = slot => {
+  const handleDateSelect = date => {
+    setSelectedDate(date);
+    const filtered = filterSlotsByDate(allSlots, date);
+    dispatch(setFilteredSlots(filtered));
+  };
+
+  const handleWeekChange = direction => {
+    const newWeek = currentWeek.map(day => {
+      const newDate = new Date(day);
+      newDate.setDate(day.getDate() + (direction === 'next' ? 7 : -7));
+      return newDate;
+    });
+    setCurrentWeek(newWeek);
+  };
+
+  const handleSlotSelect = async slot => {
     if (slot.Status !== 'available') {
-      Alert.alert(
-        'Slot Not Available',
-        'This time slot is already booked or reserved',
-      );
+      showAlert(AlertType.INFO, 'This time slot is already booked or reserved');
       return;
     }
 
-    Alert.alert(
-      'Confirm Booking',
-      `Request booking for ${ground.Name} from ${slot.StartTime} to ${
-        slot.EndTime
-      } on ${formatDisplayDate(selectedDate)}?`,
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-        },
-        {
-          text: 'Request',
-          onPress: () => requestBooking(slot.ID),
-        },
-      ],
-    );
-  };
-
-  const requestBooking = async slotId => {
     try {
-      const token = await AsyncStorage.getItem('token');
-      const response = await fetch(`${Config.API_URL}/bookings/request`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          slot_id: slotId,
-          ground_id: groundId,
-          date: selectedDate.toISOString().split('T')[0],
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        Alert.alert('Success', 'Booking request sent successfully');
-        fetchGroundDetails(); // Refresh the slots
-      } else {
-        throw new Error(data.message || 'Failed to send booking request');
-      }
-    } catch (error) {
-      console.error('Booking error:', error);
-      Alert.alert('Error', error.message);
+      await dispatch(requestBookingThunk(slot.ID, groundId, selectedDate));
+      fetchGroundTimeslots(); // refresh slots
+    } catch (e) {
+      // error already handled via showAlert inside thunk
     }
   };
 
-  const DateSelector = ({selectedDate, onDateChange}) => {
-    const dates = [];
-    const today = new Date();
-
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
-      dates.push(date);
-    }
-
-    return (
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.dateSelector}
-        contentContainerStyle={styles.dateSelectorContent}>
-        {dates.map((date, index) => {
-          const isSelected =
-            date.toDateString() === selectedDate.toDateString();
-          const dayName = date.toLocaleDateString('en-US', {weekday: 'short'});
-          const dayNumber = date.getDate();
-
-          return (
-            <TouchableOpacity
-              key={index}
-              style={[
-                styles.dateButton,
-                isSelected && styles.selectedDateButton,
-              ]}
-              onPress={() => onDateChange(date)}>
-              <Text
-                style={[styles.dayName, isSelected && styles.selectedDayName]}>
-                {dayName}
-              </Text>
-              <Text
-                style={[
-                  styles.dayNumber,
-                  isSelected && styles.selectedDayNumber,
-                ]}>
-                {dayNumber}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
-    );
-  };
-
-  if (isLoading && !ground) {
+  if (loading && !currentGround) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#4A90E2" />
-        <Text style={styles.loadingText}>Loading ground details...</Text>
+        <ActivityIndicator size="large" color={playerColors.PRIMARY} />
       </View>
     );
   }
 
-  if (!ground) {
+  if (!currentGround) {
     return (
       <View style={styles.noGroundContainer}>
         <Text style={styles.noGroundText}>Ground not found</Text>
@@ -191,51 +144,130 @@ const GroundTimeSlotScreen = ({route, navigation}) => {
       <TouchableOpacity
         style={styles.backButton}
         onPress={() => navigation.goBack()}>
-        <Icon name="arrow-back" size={24} color="#4A90E2" />
+        <Icon name="arrow-back" size={24} color={playerColors.PRIMARY} />
         <Text style={styles.backButtonText}>All Grounds</Text>
       </TouchableOpacity>
 
-      <ScrollView>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.groundHeader}>
-          <Text style={styles.groundTitle}>{ground.Name}</Text>
+          <Text style={styles.groundTitle}>{currentGround.Name}</Text>
           <View style={styles.locationRow}>
-            <Icon name="location-on" size={18} color="#666" />
-            <Text style={styles.groundLocation}>{ground.Location}</Text>
+            <Icon
+              name="location-on"
+              size={18}
+              color={playerColors.TEXT_SECONDARY}
+            />
+            <Text style={styles.groundLocation}>{currentGround.Location}</Text>
           </View>
-          <Text style={styles.groundDescription}>{ground.Description}</Text>
+          <Text style={styles.groundDescription}>
+            {currentGround.Description}
+          </Text>
+
           <View style={styles.groundInfoRow}>
             <View style={styles.infoItem}>
-              <Icon name="access-time" size={16} color="#4CAF50" />
+              <Icon name="access-time" size={16} color={playerColors.SUCCESS} />
               <Text style={styles.infoText}>
-                {ground.opening_time} - {ground.closing_time}
+                {currentGround.opening_time} - {currentGround.closing_time}
+              </Text>
+            </View>
+            <View style={styles.infoItem}>
+              <Icon
+                name="attach-money"
+                size={16}
+                color={playerColors.SUCCESS}
+              />
+              <Text style={styles.infoText}>
+                Rs. {currentGround.price || 'N/A'} per hour
               </Text>
             </View>
           </View>
         </View>
 
-        <DateSelector
-          selectedDate={selectedDate}
-          onDateChange={handleDateChange}
-        />
+        {/* Week Navigation */}
+        <View style={styles.weekNavigation}>
+          <TouchableOpacity
+            style={styles.navButton}
+            onPress={() => handleWeekChange('prev')}>
+            <Icon name="chevron-left" size={24} color={playerColors.PRIMARY} />
+          </TouchableOpacity>
 
-        <Text style={styles.sectionTitle}>Available Time Slots</Text>
+          <Text style={styles.weekRangeText}>
+            {`${formatDisplayDate(currentWeek[0])} - ${formatDisplayDate(
+              currentWeek[6],
+            )}`}
+          </Text>
 
-        {slots.length === 0 ? (
+          <TouchableOpacity
+            style={styles.navButton}
+            onPress={() => handleWeekChange('next')}>
+            <Icon name="chevron-right" size={24} color={playerColors.PRIMARY} />
+          </TouchableOpacity>
+        </View>
+
+        {/* Date Selector */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.dateSelector}>
+          {currentWeek.map((day, index) => {
+            const isSelected = isSameDay(day, selectedDate);
+            const isToday = isSameDay(day, new Date());
+
+            return (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  styles.dateButton,
+                  isToday && styles.todayButton,
+                  isSelected && styles.selectedDateButton,
+                ]}
+                onPress={() => handleDateSelect(day)}>
+                <Text
+                  style={[
+                    styles.dayName,
+                    isSelected && styles.selectedText,
+                    isToday && !isSelected && styles.todayText,
+                  ]}>
+                  {day.toLocaleDateString('en-US', {weekday: 'short'})}
+                </Text>
+                <Text
+                  style={[
+                    styles.dayNumber,
+                    isSelected && styles.selectedText,
+                    isToday && !isSelected && styles.todayText,
+                  ]}>
+                  {day.getDate()}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+
+        <Text style={styles.sectionTitle}>
+          Available Slots for {formatDisplayDate(selectedDate)}
+        </Text>
+
+        {filteredSlots.length === 0 ? (
           <View style={styles.noSlotsContainer}>
-            <Icon name="schedule" size={40} color="#ccc" />
+            <Icon name="schedule" size={48} color={playerColors.GRAY} />
             <Text style={styles.noSlotsText}>
               No available slots for this date
+            </Text>
+            <Text style={styles.noSlotsHint}>
+              Try selecting a different date or check back later
             </Text>
           </View>
         ) : (
           <View style={styles.slotsContainer}>
-            {slots.map(slot => (
+            {filteredSlots.map(slot => (
               <TimeSlotCard
-                key={`${slot.ID}-${slot.StartTime}`}
+                key={slot.ID}
                 startTime={slot.StartTime}
                 endTime={slot.EndTime}
-                status={slot.Status}
+                status={slot.Status.toLowerCase()}
+                price={slot.price || currentGround.price || 'N/A'}
                 onPress={() => handleSlotSelect(slot)}
+                theme={playerColors}
               />
             ))}
           </View>
