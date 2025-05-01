@@ -1,6 +1,4 @@
-// navigation/AppNavigator.js
 import React from 'react';
-import {useSelector} from 'react-redux';
 import {createStackNavigator} from '@react-navigation/stack';
 import {createDrawerNavigator} from '@react-navigation/drawer';
 
@@ -31,13 +29,15 @@ const OwnerDrawerNavigator = () => (
 const PlayerDrawerNavigator = () => (
   <Drawer.Navigator drawerContent={props => <CustomDrawer {...props} />}>
     <Drawer.Screen name="Welcome Back" component={PlayerHomeScreen} />
-    <Stack.Screen name="GroundDetail" component={GroundTimeSlotScreen} />
+    <Stack.Screen
+      name="GroundDetail"
+      component={GroundTimeSlotScreen}
+      options={{headerShown: false}}
+    />
   </Drawer.Navigator>
 );
 
 const AppNavigator = () => {
-  const {user} = useSelector(state => state.auth);
-
   return (
     <Stack.Navigator initialRouteName="Landing">
       <Stack.Screen
@@ -55,19 +55,16 @@ const AppNavigator = () => {
         component={SignupScreen}
         options={{headerShown: false}}
       />
-      {user?.role === 'owner' ? (
-        <Stack.Screen
-          name="OwnerDrawer"
-          component={OwnerDrawerNavigator}
-          options={{headerShown: false}}
-        />
-      ) : (
-        <Stack.Screen
-          name="PlayerDrawer"
-          component={PlayerDrawerNavigator}
-          options={{headerShown: false}}
-        />
-      )}
+      <Stack.Screen
+        name="OwnerDrawer"
+        component={OwnerDrawerNavigator}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="PlayerDrawer"
+        component={PlayerDrawerNavigator}
+        options={{headerShown: false}}
+      />
     </Stack.Navigator>
   );
 };

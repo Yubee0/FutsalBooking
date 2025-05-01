@@ -61,14 +61,16 @@ const GroundTimeSlotScreen = ({route, navigation}) => {
       const data = JSON.parse(responseText);
       console.log('Parsed API response:', data);
 
+      // Updated to handle the correct response structure
+      const slots = data.slots || [];
       dispatch(
         fetchGroundSuccess({
           ground: data.ground,
-          slots: data.slots || [],
+          slots: slots,
         }),
       );
 
-      const filtered = filterSlotsByDate(data.slots, selectedDate);
+      const filtered = filterSlotsByDate(slots, selectedDate);
       dispatch(setFilteredSlots(filtered));
     } catch (error) {
       dispatch(fetchGroundFailure(error.message));
@@ -82,7 +84,9 @@ const GroundTimeSlotScreen = ({route, navigation}) => {
     }
     const dateStr = date.toISOString().split('T')[0];
     return slots.filter(slot => {
-      const slotDateStr = slot.date ? slot.date.split('T')[0] : null;
+      // Handle both possible date formats from API
+      const slotDate = slot.date ? new Date(slot.date) : new Date();
+      const slotDateStr = slotDate.toISOString().split('T')[0];
       return slotDateStr === dateStr;
     });
   };
@@ -119,7 +123,7 @@ const GroundTimeSlotScreen = ({route, navigation}) => {
   if (loading && !currentGround) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#4A90E2" />
+        <ActivityIndicator size="large" color={playerColors.PRIMARY} />
       </View>
     );
   }
@@ -140,7 +144,7 @@ const GroundTimeSlotScreen = ({route, navigation}) => {
       <TouchableOpacity
         style={styles.backButton}
         onPress={() => navigation.goBack()}>
-        <Icon name="arrow-back" size={24} color="#4A90E2" />
+        <Icon name="arrow-back" size={24} color={playerColors.PRIMARY} />
         <Text style={styles.backButtonText}>All Grounds</Text>
       </TouchableOpacity>
 
@@ -148,7 +152,11 @@ const GroundTimeSlotScreen = ({route, navigation}) => {
         <View style={styles.groundHeader}>
           <Text style={styles.groundTitle}>{currentGround.Name}</Text>
           <View style={styles.locationRow}>
-            <Icon name="location-on" size={18} color="#666" />
+            <Icon
+              name="location-on"
+              size={18}
+              color={playerColors.TEXT_SECONDARY}
+            />
             <Text style={styles.groundLocation}>{currentGround.Location}</Text>
           </View>
           <Text style={styles.groundDescription}>
@@ -157,13 +165,17 @@ const GroundTimeSlotScreen = ({route, navigation}) => {
 
           <View style={styles.groundInfoRow}>
             <View style={styles.infoItem}>
-              <Icon name="access-time" size={16} color="#4CAF50" />
+              <Icon name="access-time" size={16} color={playerColors.SUCCESS} />
               <Text style={styles.infoText}>
                 {currentGround.opening_time} - {currentGround.closing_time}
               </Text>
             </View>
             <View style={styles.infoItem}>
-              <Icon name="attach-money" size={16} color="#4CAF50" />
+              <Icon
+                name="attach-money"
+                size={16}
+                color={playerColors.SUCCESS}
+              />
               <Text style={styles.infoText}>
                 Rs. {currentGround.price || 'N/A'} per hour
               </Text>
@@ -176,7 +188,7 @@ const GroundTimeSlotScreen = ({route, navigation}) => {
           <TouchableOpacity
             style={styles.navButton}
             onPress={() => handleWeekChange('prev')}>
-            <Icon name="chevron-left" size={24} color="#4A90E2" />
+            <Icon name="chevron-left" size={24} color={playerColors.PRIMARY} />
           </TouchableOpacity>
 
           <Text style={styles.weekRangeText}>
@@ -188,7 +200,7 @@ const GroundTimeSlotScreen = ({route, navigation}) => {
           <TouchableOpacity
             style={styles.navButton}
             onPress={() => handleWeekChange('next')}>
-            <Icon name="chevron-right" size={24} color="#4A90E2" />
+            <Icon name="chevron-right" size={24} color={playerColors.PRIMARY} />
           </TouchableOpacity>
         </View>
 
@@ -237,7 +249,7 @@ const GroundTimeSlotScreen = ({route, navigation}) => {
 
         {filteredSlots.length === 0 ? (
           <View style={styles.noSlotsContainer}>
-            <Icon name="schedule" size={48} color="#ccc" />
+            <Icon name="schedule" size={48} color={playerColors.GRAY} />
             <Text style={styles.noSlotsText}>
               No available slots for this date
             </Text>
@@ -253,7 +265,7 @@ const GroundTimeSlotScreen = ({route, navigation}) => {
                 startTime={slot.StartTime}
                 endTime={slot.EndTime}
                 status={slot.Status.toLowerCase()}
-                price={slot.price || 'N/A'}
+                price={slot.price || currentGround.price || 'N/A'}
                 onPress={() => handleSlotSelect(slot)}
                 theme={playerColors}
               />
