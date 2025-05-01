@@ -36,6 +36,7 @@ func Login(c *gin.Context) {
 	var req struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
+		FCMToken string `json:"fcm_token"`
 	}
 
 	// Bind the request JSON to struct
@@ -113,11 +114,18 @@ func Login(c *gin.Context) {
 		return
 	}
 
+	user.FCMToken = req.FCMToken
+	if err := database.DB.Save(&user).Error; err != nil {
+		log.Printf("Failed to update FCM token: %v", err)
+		// Not fatal, continue login
+	}
+
 	// Return Firebase token + user role
 	c.JSON(http.StatusOK, gin.H{
-		"token":   firebaseResp.IDToken,
-		"email":   firebaseResp.Email,
-		"expires": firebaseResp.ExpiresIn,
-		"role":    user.Role,
+		"token":      firebaseResp.IDToken,
+		"email":      firebaseResp.Email,
+		"expires":    firebaseResp.ExpiresIn,
+		"role":       user.Role,
+		"firebaseid": user.FirebaseUID,
 	})
 }

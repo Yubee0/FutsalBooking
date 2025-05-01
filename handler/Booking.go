@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"errors"
-	"log"
 	"net/http"
 	"time"
 
@@ -27,17 +25,14 @@ func CreateBookingRequest(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
+		// Parse and validate date
 		dateParsed, err := time.Parse("2006-01-02", req.Date)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format"})
+		if err != nil || !validTimeFormat(req.StartTime) || !validTimeFormat(req.EndTime) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date or time format"})
 			return
 		}
 
-		if !validTimeFormat(req.StartTime) || !validTimeFormat(req.EndTime) {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid time format"})
-			return
-		}
-
+		// Get user ID from context
 		userID, exists := c.Get("Userid")
 		if !exists {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
@@ -66,21 +61,14 @@ func CreateBookingRequest(db *gorm.DB) gin.HandlerFunc {
 		}
 
 		if err := db.Create(&booking).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create booking request"})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create booking"})
 			return
 		}
 
 		// Fetch ground
 		var ground models.Ground
-		result := db.Where("id = ?", booking.GroundID).First(&ground)
-		if result.Error != nil {
-			if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-				log.Printf("Ground with ID %d not found", booking.GroundID)
-				c.JSON(http.StatusBadRequest, gin.H{"error": "Ground not found"})
-				return
-			}
-			log.Printf("Error fetching ground: %v", result.Error)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+		if err := db.First(&ground, booking.GroundID).Error; err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Ground not found"})
 			return
 		}
 
@@ -91,24 +79,22 @@ func CreateBookingRequest(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		// Notify ground owner
+		// Notify owner via FCM
 		if owner.FCMToken != "" {
-			go utils.SendFCMNotification(owner.FCMToken, "New Booking Request", "You have a new booking request on your ground.")
+			go utils.SendFCMNotification(owner.FCMToken, "New Booking Request", "You have a new booking request.")
 		}
 
-		// Fetch booking user (to notify them if needed)
+		// Optionally notify the user as well
 		var bookingUser models.User
-		if err := db.First(&bookingUser, userID.(uint)).Error; err != nil {
-			log.Printf("Failed to fetch booking user: %v", err)
-		} else {
+		if err := db.First(&bookingUser, userID.(uint)).Error; err == nil {
 			if bookingUser.FCMToken != "" {
-				bookingMessage := "Your booking request has been sent successfully!"
-				go utils.SendFCMNotification(bookingUser.FCMToken, "Booking Submitted", bookingMessage)
+				go utils.SendFCMNotification(bookingUser.FCMToken, "Booking Submitted", "Your request was submitted successfully.")
 			}
 		}
 
+		// Respond
 		c.JSON(http.StatusCreated, gin.H{
-			"message": "Booking request sent successfully",
+			"message": "Booking request created",
 			"booking": booking,
 		})
 	}
