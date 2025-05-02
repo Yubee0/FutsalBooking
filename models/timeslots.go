@@ -11,4 +11,5 @@ type TimeSlot struct {
 	StartTime string
 	EndTime   string
 	Status    string
+	Price     int `gorm:"default:200"`
 }

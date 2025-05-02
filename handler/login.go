@@ -45,6 +45,8 @@ func Login(c *gin.Context) {
 		return
 	}
 
+	log.Println("fcmtoken:", req.FCMToken)
+
 	// Build Firebase REST API request
 	loginPayload := map[string]interface{}{
 		"email":             req.Email,

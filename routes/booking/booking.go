@@ -14,5 +14,6 @@ func SetupBookingRoutes(r *gin.Engine, db *gorm.DB) {
 	bookingGroup.Use(middlewares.FirebaseAuthMiddleware(database.DB))
 	{
 		bookingGroup.POST("", handler.CreateBookingRequest(db))
+		bookingGroup.POST("/status", handler.AcceptOrDeclineBookingRequest(db))
 	}
 }

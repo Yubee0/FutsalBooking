@@ -25,6 +25,7 @@ func CreateGround(c *gin.Context) {
 		Description string `json:"description"`
 		StartTime   string `json:"start-time"` // e.g. "07:00"
 		EndTime     string `json:"end-time"`   // e.g. "20:00"
+		Price       int    `json:"price"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -79,6 +80,7 @@ func CreateGround(c *gin.Context) {
 				Date:      day.Format(dateLayout), // Fixed: Assign correct date
 				StartTime: t.Format(layout),
 				EndTime:   t.Add(time.Hour).Format(layout),
+				Price:     req.Price,
 				Status:    "available",
 			}
 			slots = append(slots, slot)
