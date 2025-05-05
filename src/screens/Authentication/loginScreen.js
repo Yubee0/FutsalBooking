@@ -8,9 +8,7 @@ import {
   Platform,
 } from 'react-native';
 import {useDispatch} from 'react-redux';
-import Config from 'react-native-config';
-import {setCredentials} from '../../redux/slices/authSlice';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import {loginUser} from '../../redux/slices/authThunk';
 import {colors} from '../../constants/color';
 import Button from '../../components/Button';
 import styles from './styles';
@@ -43,55 +41,16 @@ const LoginScreen = ({navigation}) => {
 
     setIsLoading(true);
     try {
-      const response = await fetch(`${Config.API_URL}/auth/login`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({email, password}),
-      });
+      const result = await dispatch(loginUser({email, password})).unwrap();
 
-      const responseText = await response.text();
-      console.log('Raw server response:', responseText); // Log raw response
-
-      let data;
-      try {
-        data = JSON.parse(responseText);
-      } catch (e) {
-        console.error('Failed to parse JSON:', responseText);
-        if (responseText.includes('<!DOCTYPE html>')) {
-          throw new Error('Server returned HTML page. Check your API URL.');
-        }
-        throw new Error('Invalid server response format');
-      }
-
-      if (!response.ok) {
-        console.log('Login failed with status:', response.status, data);
-        if (data.error === 'Invalid credentials') {
-          throw new Error('Incorrect email or password');
-        }
-        throw new Error(data.message || `Login failed (${response.status})`);
-      }
-
-      if (!data.token || !data.role) {
-        throw new Error('Server response missing required fields');
-      }
-
-      await AsyncStorage.setItem('token', data.token);
-      dispatch(
-        setCredentials({
-          token: data.token,
-          user: {email: data.email, role: data.role},
-        }),
-      );
-
-      // Using custom alert for success
       showAlert(AlertType.SUCCESS, 'Logged in successfully!');
       navigation.navigate(
-        data.role === 'owner' ? 'OwnerDrawer' : 'PlayerDrawer',
+        result.user.role === 'owner' ? 'OwnerDrawer' : 'PlayerDrawer',
       );
     } catch (error) {
-      console.error('Login Error:', error.message, error.stack);
-      let message = error.message;
-      if (message.includes('Incorrect email or password')) {
+      console.error('Login Error:', error);
+      let message = error;
+      if (error.includes('Incorrect email or password')) {
         message = 'The email or password you entered is incorrect';
       }
       showAlert(AlertType.WARNING, message);
@@ -99,32 +58,6 @@ const LoginScreen = ({navigation}) => {
       setIsLoading(false);
     }
   };
-
-  // const handleLogin = async () => {
-  //   setIsLoading(true);
-
-  //   try {
-  //     // Simulate successful login with dummy data
-  //     const dummyToken = 'dummy-auth-token';
-  //     const dummyEmail = 'player@example.com';
-
-  //     await AsyncStorage.setItem('token', dummyToken);
-  //     dispatch(
-  //       setCredentials({
-  //         token: dummyToken,
-  //         user: {email: dummyEmail, role: 'player'},
-  //       }),
-  //     );
-
-  //     showAlert(AlertType.SUCCESS, 'Login Successful.');
-  //     navigation.navigate('PlayerDrawer');
-  //   } catch (error) {
-  //     console.error('Login Error:', error);
-  //     showAlert(AlertType.ERROR, 'An error occurred during login');
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
 
   return (
     <KeyboardAvoidingView

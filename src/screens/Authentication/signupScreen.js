@@ -6,16 +6,18 @@ import {
   Platform,
   KeyboardAvoidingView,
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
-import Config from 'react-native-config';
+import {signupUser} from '../../redux/slices/authThunk';
 import Button from '../../components/Button';
 import {colors} from '../../constants/color';
 import styles from './styles';
 import {AlertType} from '../../components/DropdownAlert';
 import {showAlert} from '../../components/Alert';
+import {useDispatch} from 'react-redux';
+import {useNavigation} from '@react-navigation/native';
 
 const SignupScreen = () => {
   const navigation = useNavigation();
+  const dispatch = useDispatch();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -25,7 +27,7 @@ const SignupScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const validateForm = () => {
-    let newErrors = {};
+    const newErrors = {};
     if (!name) {
       newErrors.name = 'Name is required';
     }
@@ -52,38 +54,15 @@ const SignupScreen = () => {
     }
 
     setIsLoading(true);
-    const payload = {name, email, password, phone, role};
-
     try {
-      const response = await fetch(`${Config.API_URL}/auth/register`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(payload),
-      });
+      await dispatch(signupUser({name, email, password, phone, role})).unwrap();
 
-      const text = await response.text();
-      const data = JSON.parse(text);
-
-      if (!response.ok) {
-        if (data.error === 'User already exists') {
-          showAlert(
-            AlertType.ERROR,
-            'An account with this email already exists',
-          );
-        } else {
-          throw new Error(data.message || 'Registration failed');
-        }
-        return;
-      }
-
-      showAlert(AlertType.SUCCESS, 'Account created successfully!', [
-        {text: 'OK', onPress: () => navigation.navigate('Login')},
-      ]);
+      showAlert(AlertType.SUCCESS, 'Account created successfully!');
+      navigation.navigate('Login');
     } catch (error) {
-      console.error('Signup Error:', error);
       showAlert(
         AlertType.ERROR,
-        error.message || 'Failed to create account. Please try again.',
+        error || 'Failed to create account. Please try again.',
       );
     } finally {
       setIsLoading(false);
@@ -186,7 +165,7 @@ const SignupScreen = () => {
           backgroundColor="transparent"
           textColor={colors.PRIMARY}
           style={styles.secondaryButton}
-          textStyle={{fontSize: 14}}
+          textStyle={{fontSize: 18}}
         />
       </View>
     </KeyboardAvoidingView>

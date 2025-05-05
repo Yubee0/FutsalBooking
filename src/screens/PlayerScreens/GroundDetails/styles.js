@@ -1,49 +1,28 @@
-// screens/player/GroundTimeSlotScreen/styles.js
 import {StyleSheet} from 'react-native';
 import {playerColors} from '../../../constants/color';
 
-const styles = StyleSheet.create({
+export default StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: playerColors.BACKGROUND,
   },
   scrollContainer: {
-    padding: 16,
-    paddingBottom: 80,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  noGroundContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  noGroundText: {
-    fontSize: 18,
-    color: playerColors.TEXT_PRIMARY,
-    marginBottom: 16,
-  },
-  backLink: {
-    color: playerColors.PRIMARY,
-    fontSize: 16,
-    textDecorationLine: 'underline',
+    paddingBottom: 20,
   },
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
+    paddingBottom: 8,
   },
   backButtonText: {
+    marginLeft: 8,
     color: playerColors.PRIMARY,
     fontSize: 16,
-    marginLeft: 8,
   },
   groundHeader: {
-    marginBottom: 20,
+    padding: 16,
+    paddingBottom: 8,
   },
   groundTitle: {
     fontSize: 24,
@@ -57,14 +36,14 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   groundLocation: {
-    fontSize: 16,
-    color: playerColors.TEXT_SECONDARY,
     marginLeft: 4,
+    color: playerColors.TEXT_SECONDARY,
+    fontSize: 14,
   },
   groundDescription: {
-    fontSize: 14,
     color: playerColors.TEXT_SECONDARY,
-    marginBottom: 16,
+    fontSize: 14,
+    marginBottom: 12,
   },
   groundInfoRow: {
     flexDirection: 'row',
@@ -76,49 +55,54 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   infoText: {
-    fontSize: 14,
-    color: playerColors.TEXT_SECONDARY,
     marginLeft: 4,
+    color: playerColors.TEXT_SECONDARY,
+    fontSize: 14,
   },
   weekNavigation: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: playerColors.WHITE,
+    borderTopWidth: 1,
+    borderTopColor: playerColors.BORDER,
+    borderBottomWidth: 1,
+    borderBottomColor: playerColors.BORDER,
   },
   navButton: {
     padding: 8,
   },
   weekRangeText: {
-    fontSize: 14,
-    color: playerColors.TEXT_SECONDARY,
-    fontWeight: '500',
+    fontWeight: 'bold',
+    color: playerColors.TEXT_PRIMARY,
   },
   dateSelector: {
-    paddingBottom: 8,
-  },
-  dateButton: {
-    width: 60,
     paddingVertical: 12,
-    marginHorizontal: 4,
-    borderRadius: 12,
-    alignItems: 'center',
+    paddingHorizontal: 8,
     backgroundColor: playerColors.WHITE,
   },
+  dateButton: {
+    width: 50,
+    alignItems: 'center',
+    paddingVertical: 8,
+    marginHorizontal: 4,
+    borderRadius: 8,
+  },
   todayButton: {
-    borderWidth: 1,
-    borderColor: playerColors.PRIMARY,
+    backgroundColor: playerColors.GRAY_LIGHT,
   },
   selectedDateButton: {
     backgroundColor: playerColors.PRIMARY,
   },
   dayName: {
-    fontSize: 14,
+    fontSize: 12,
+    fontWeight: 'bold',
     color: playerColors.TEXT_SECONDARY,
-    fontWeight: '500',
   },
   dayNumber: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: playerColors.TEXT_PRIMARY,
     marginTop: 4,
@@ -130,31 +114,48 @@ const styles = StyleSheet.create({
     color: playerColors.PRIMARY,
   },
   sectionTitle: {
+    padding: 16,
+    paddingBottom: 8,
     fontSize: 18,
     fontWeight: 'bold',
     color: playerColors.TEXT_PRIMARY,
-    marginVertical: 16,
+  },
+  slotsContainer: {
+    paddingHorizontal: 16,
   },
   noSlotsContainer: {
-    justifyContent: 'center',
     alignItems: 'center',
-    padding: 40,
+    padding: 32,
   },
   noSlotsText: {
     fontSize: 16,
-    color: playerColors.TEXT_SECONDARY,
+    color: playerColors.TEXT_PRIMARY,
     marginTop: 16,
-    textAlign: 'center',
+    marginBottom: 8,
   },
   noSlotsHint: {
     fontSize: 14,
-    color: playerColors.GRAY_LIGHT,
-    marginTop: 8,
+    color: playerColors.TEXT_SECONDARY,
     textAlign: 'center',
   },
-  slotsContainer: {
-    marginBottom: 20,
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  noGroundContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
+  },
+  noGroundText: {
+    fontSize: 18,
+    color: playerColors.TEXT_PRIMARY,
+    marginBottom: 16,
+  },
+  backLink: {
+    color: playerColors.PRIMARY,
+    fontSize: 16,
   },
 });
-
-export default styles;

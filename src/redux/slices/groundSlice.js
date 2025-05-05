@@ -17,10 +17,9 @@ const groundSlice = createSlice({
       state.error = null;
     },
     fetchGroundSuccess(state, action) {
-      state.currentGround = action.payload.ground;
-      state.allSlots = action.payload.slots || [];
-      state.filteredSlots = action.payload.slots || [];
       state.loading = false;
+      state.currentGround = action.payload.ground;
+      state.allSlots = action.payload.slots;
     },
     fetchGroundFailure(state, action) {
       state.loading = false;
@@ -29,33 +28,22 @@ const groundSlice = createSlice({
     setFilteredSlots(state, action) {
       state.filteredSlots = action.payload;
     },
-    resetGround() {
-      return initialState;
+    reserveSlot(state, action) {
+      const slotId = action.payload;
+      const slot = state.allSlots.find(s => s.ID === slotId);
+      if (slot) {
+        slot.Status = 'booked';
+      }
     },
   },
 });
-
-export const reserveSlot = slotId => (dispatch, getState) => {
-  const {allSlots, currentGround} = getState().ground;
-
-  const updatedSlots = allSlots.map(slot =>
-    slot.ID === slotId ? {...slot, Status: 'reserved'} : slot,
-  );
-
-  dispatch(
-    fetchGroundSuccess({
-      ground: currentGround,
-      slots: updatedSlots,
-    }),
-  );
-};
 
 export const {
   fetchGroundStart,
   fetchGroundSuccess,
   fetchGroundFailure,
   setFilteredSlots,
-  resetGround,
+  reserveSlot,
 } = groundSlice.actions;
 
 export default groundSlice.reducer;

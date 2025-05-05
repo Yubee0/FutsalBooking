@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {showAlert} from '../../components/Alert';
 import Config from 'react-native-config';
+import {AlertType} from '../../components/DropdownAlert';
 
 export const requestBookingThunk =
   (slotId, groundId, date) => async (dispatch, getState) => {
@@ -25,11 +26,11 @@ export const requestBookingThunk =
         throw new Error(data.message || 'Failed to send booking request');
       }
 
-      showAlert('Success', 'Booking request sent successfully');
+      showAlert(AlertType.SUCCESS, 'Booking request sent successfully');
       return data.booking;
     } catch (error) {
       console.error('Booking error:', error);
-      showAlert('Error', error.message);
+      showAlert(AlertType.ERROR, error.message);
       throw error;
     }
   };
